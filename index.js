@@ -22,18 +22,18 @@ function OrderedStreams(options) {
     this._openedStreams = streams.length;
     streams.forEach(function (s, i) {
       s.on('data', function (data) {
-        // if data emmitted from stream, which is at current index
         if (i === self._currentIndex) {
+          // data got from stream, which is at current index
           self._currentIndex++;
-          self.push(data); // push data downstream
+          self.push(data);
         } else {
-          self._buff[i] = data; // or store in buffer for future
+          self._buff[i] = data; // store in buffer for future
         }
       });
       s.on('end', function () {
-        // if stream ended without any data and it at current index
         if (i === self._currentIndex) {
-          self._currentIndex++; // increment index
+          // stream ended without any data and it at current index
+          self._currentIndex++;
         }
         if (!--self._openedStreams) {
           self.push(null); // close OrderedStreams
@@ -55,9 +55,9 @@ function OrderedStreams(options) {
 util.inherits(OrderedStreams, Readable);
 
 OrderedStreams.prototype._read = function () {
-  // if we already have stored data push it
   var data = this._buff[this._currentIndex];
   if (data) {
+    // if we already have stored data - push it
     this._currentIndex++;
     this.push(data);
   }
