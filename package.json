@@ -4,8 +4,13 @@
   "description": "Combines array of streams into one read stream in strict order",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha -R spec"
   },
   "author": "Artem Medeusheyev <artem.medeusheyev@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "should": "~2.1.1",
+    "mocha": "~1.17.0",
+    "through2": "~0.4.0"
+  }
 }

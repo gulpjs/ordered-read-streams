@@ -5,6 +5,8 @@ function OrderedStreams(options) {
   options = options || {};
   if (Array.isArray(options)) {
     options = {streams: options};
+  } else {
+    options = {streams: [options]};
   }
   options.objectMode = true;
 
@@ -21,6 +23,10 @@ function OrderedStreams(options) {
     this._buff = {};
     this._openedStreams = streams.length;
     streams.forEach(function (s, i) {
+      if (!s.readable) {
+        throw new Error('All input streams must be readable');
+      }
+
       s.on('data', function (data) {
         if (i === self._currentIndex) {
           // data got from stream, which is at current index
