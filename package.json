@@ -6,6 +6,10 @@
   "scripts": {
     "test": "mocha -R spec && jshint"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/armed/ordered-read-streams.git"
+  },
   "author": "Artem Medeusheyev <artem.medeusheyev@gmail.com>",
   "license": "MIT",
   "devDependencies": {
