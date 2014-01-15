@@ -18,7 +18,7 @@ function OrderedStreams(options) {
   if (streams.length === 0) {
     this.push(null); // no streams, close
   } else {
-    // initial index in list of glob-streams
+    // initial index in list of streams
     this._currentIndex = 0;
     this._buff = {};
     this._openedStreams = streams.length;
@@ -42,11 +42,11 @@ function OrderedStreams(options) {
           self._currentIndex++;
         }
         if (!--self._openedStreams) {
-          self.push(null); // close OrderedStreams
+          self.push(null); // close
         }
       })
       s.on('error', function (e) {
-        self.emit('error', e); // error event downstream
+        self.emit('error', e); // error event
       })
     });
 
