@@ -39,7 +39,6 @@ var s3 = through.obj(function (data, enc, next) {
 });
 
 var streams = new Ordered([s1, s2, s3]);
-var results = [];
 streams.on('data', function (data) {
   console.log(data);
 })
