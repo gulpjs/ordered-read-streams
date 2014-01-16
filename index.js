@@ -52,12 +52,6 @@ function OrderedStreams(options) {
         self.emit('error', e);
       });
     });
-
-    this.on('finish', function() {
-      streams.forEach(function (s) {
-        s.end();
-      });
-    });
   }
 }
 

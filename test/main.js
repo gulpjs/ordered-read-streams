@@ -115,14 +115,20 @@ describe('ordered-read-streams', function () {
       next();
     });
 
-    var streams = new OrderedStreams(s);
-    streams.on('error', function (err) {
-      err.message.should.equal('stahp!');
-    });
+    var errMsg;
+    var streamData;
+    var streams = new OrderedStreams([s, s2]);
     streams.on('data', function (data) {
-      data.should.equal('Im ok!');
+      streamData = data;
     });
-    streams.on('end', done);
+    streams.on('error', function (err) {
+      errMsg = err.message;
+    });
+    streams.on('end', function () {
+      errMsg.should.equal('stahp!');
+      streamData.should.equal('Im ok!');
+      done();
+    });
 
     s.write('go');
     s.end();
