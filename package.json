@@ -4,7 +4,7 @@
   "description": "Combines array of streams into one read stream in strict order",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -R spec && jshint"
+    "test": "mocha -R spec && jshint *.js test/*.js"
   },
   "repository": {
     "type": "git",

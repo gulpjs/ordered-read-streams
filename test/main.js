@@ -32,14 +32,14 @@ describe('ordered-read-streams', function () {
     var results = [];
     streams.on('data', function (data) {
       results.push(data);
-    })
+    });
     streams.on('end', function () {
       results.length.should.equal(3);
       results[0].should.equal('stream 1');
       results[1].should.equal('stream 2');
       results[2].should.equal('stream 3');
       done();
-    })
+    });
 
     s1.write('stream 1');
     s1.end();
@@ -57,35 +57,35 @@ describe('ordered-read-streams', function () {
       setTimeout(function () {
         self.push(data);
         next();
-      }, 200)
+      }, 200);
     });
     var s2 = through.obj(function (data, enc, next) {
       var self = this;
       setTimeout(function () {
         self.push(data);
         next();
-      }, 30)
+      }, 30);
     });
     var s3 = through.obj(function (data, enc, next) {
       var self = this;
       setTimeout(function () {
         self.push(data);
         next();
-      }, 100)
+      }, 100);
     });
 
     var streams = new OrderedStreams([s1, s2, s3]);
     var results = [];
     streams.on('data', function (data) {
       results.push(data);
-    })
+    });
     streams.on('end', function () {
       results.length.should.equal(3);
       results[0].should.equal('stream 1');
       results[1].should.equal('stream 2');
       results[2].should.equal('stream 3');
       done();
-    })
+    });
 
     s1.write('stream 1');
     s1.end();
@@ -101,11 +101,11 @@ describe('ordered-read-streams', function () {
     var s = through.obj(function (data, enc, next) {
       this.emit('error', new Error('stahp!'));
       next();
-    })
+    });
     var s2 = through.obj(function (data, enc, next) {
       this.push(data);
       next();
-    })
+    });
 
     var streams = new OrderedStreams(s);
     streams.on('error', function (err) {

@@ -44,10 +44,10 @@ function OrderedStreams(options) {
         if (!--self._openedStreams) {
           self.push(null); // close
         }
-      })
+      });
       s.on('error', function (e) {
-        self.emit('error', e); // error event
-      })
+        self.emit('error', e); // error event downstream
+      });
     });
 
     this.on('finish', function() {
@@ -67,6 +67,6 @@ OrderedStreams.prototype._read = function () {
     this._currentIndex++;
     this.push(data);
   }
-}
+};
 
 module.exports = OrderedStreams;
