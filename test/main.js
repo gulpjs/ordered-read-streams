@@ -3,6 +3,14 @@ var through = require('through2');
 var OrderedStreams = require('../');
 
 describe('ordered-read-streams', function () {
+  it('should end if no streams are given', function (done) {
+    var streams = new OrderedStreams();
+    streams.on('data', function () {
+      done('error');
+    });
+    streams.on('end', done);
+  });
+
   it('should throw error if one or more streams are not readable', function (done) {
     var writable = { readable: false };
 

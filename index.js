@@ -2,7 +2,7 @@ var Readable = require('stream').Readable;
 var util = require('util');
 
 function OrderedStreams(options) {
-  options = options || {};
+  options = options || [];
   if (Array.isArray(options)) {
     options = {streams: options};
   } else {
@@ -46,7 +46,10 @@ function OrderedStreams(options) {
         }
       });
       s.on('error', function (e) {
-        self.emit('error', e); // error event downstream
+        if (i === self._currentIndex) {
+          self._currentIndex++;
+        }
+        self.emit('error', e);
       });
     });
 
