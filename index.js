@@ -1,18 +1,18 @@
 var Readable = require('stream').Readable;
 var util = require('util');
 
-function OrderedStreams(options) {
-  options = options || [];
-  if (Array.isArray(options)) {
-    options = {streams: options};
-  } else {
-    options = {streams: [options]};
+function OrderedStreams(streams, options) {
+  streams = streams || [];
+  options = options || {};
+
+  if (!Array.isArray(streams)) {
+    streams = [streams];
   }
+
   options.objectMode = true;
 
   Readable.call(this, options);
 
-  var streams = options.streams || [];
   var self = this;
 
   if (streams.length === 0) {
