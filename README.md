@@ -1,4 +1,4 @@
-# ordered-read-streams [![NPM version](https://badge.fury.io/js/ordered-read-streams.png)](http://badge.fury.io/js/ordered-read-streams) [![Build Status](https://travis-ci.org/armed/ordered-read-streams.png?branch=master)](https://travis-ci.org/armed/ordered-read-streams)
+# ordered-read-streams [![NPM version](https://badge.fury.io/js/ordered-read-streams.png)](http://badge.fury.io/js/ordered-read-streams) [![Build Status](https://travis-ci.org/armed/ordered-read-streams.png?branch=master)](https://travis-ci.org/armed/ordered-read-streams) [![devDependency Status](https://david-dm.org/armed/ordered-read-streams/dev-status.png)](https://david-dm.org/armed/ordered-read-streams#info=devDependencies)
 
 Combines array of streams into one read stream in strict order.
 

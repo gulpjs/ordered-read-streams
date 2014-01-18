@@ -13,7 +13,7 @@
   "author": "Artem Medeusheyev <artem.medeusheyev@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "should": "~2.1.1",
+    "should": "~3.0.1",
     "mocha": "~1.17.0",
     "through2": "~0.4.0",
     "jshint": "~2.4.1"
