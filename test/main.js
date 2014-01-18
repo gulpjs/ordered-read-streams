@@ -110,7 +110,7 @@ describe('ordered-read-streams', function () {
       results.push(data);
     });
     streams.on('end', function () {
-      results.length.should.equal(3);
+      results.length.should.be.exactly(3);
       results[0].should.equal('stream 1');
       results[1].should.equal('stream 2');
       results[2].should.equal('stream 3');
