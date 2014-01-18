@@ -42,7 +42,7 @@ describe('ordered-read-streams', function () {
       results.push(data);
     });
     streams.on('end', function () {
-      results.length.should.equal(3);
+      results.length.should.be.exactly(3);
       results[0].should.equal('stream 1');
       results[1].should.equal('stream 2');
       results[2].should.equal('stream 3');
@@ -57,6 +57,28 @@ describe('ordered-read-streams', function () {
 
     s3.write('stream 3');
     s3.end();
+  });
+
+  it('should emit all data event from each stream', function (done) {
+    var s = through.obj(function (data, enc, next) {
+      this.push(data);
+      next();
+    });
+
+    var streams = new OrderedStreams(s);
+    var results = [];
+    streams.on('data', function (data) {
+      results.push(data);
+    });
+    streams.on('end', function () {
+      results.length.should.be.exactly(3);
+      done();
+    });
+
+    s.write('data1');
+    s.write('data2');
+    s.write('data3');
+    s.end();
   });
 
   it('should preserve streams order', function(done) {
