@@ -2,6 +2,10 @@ var Readable = require('stream').Readable;
 var util = require('util');
 
 function OrderedStreams(streams, options) {
+  if (!(this instanceof(OrderedStreams))) {
+    return new OrderedStreams(streams, options);
+  }
+
   streams = streams || [];
   options = options || {};
 
