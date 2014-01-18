@@ -21,7 +21,6 @@ function OrderedStreams(streams, options) {
     // initial index in list of streams
     this._currentIndex = 0;
     this._buff = {};
-    this._buffChinks = 0;
     this._totalStreams = streams.length;
     this._openedStreams = streams.length;
     streams.forEach(function (s, i) {
@@ -38,7 +37,6 @@ function OrderedStreams(streams, options) {
           // data got from stream, which is at current index
           self.push(data);
         } else {
-          self._buffChinks++;
           self._buff[i].push(data); // store in buffer for future
         }
       });
@@ -48,12 +46,13 @@ function OrderedStreams(streams, options) {
           self._currentIndex++;
         }
         if (!--self._openedStreams) {
-          for (var i = self._currentIndex; i < self._totalStreams; i++) {
-            while (self._buff[i].length) {
-              self.push(self._buff[i].shift());
+          // flush buffered data (if any) before end
+          for (var j = 0; j < self._totalStreams; j++) {
+            while (self._buff[j].length) {
+              self.push(self._buff[j].shift());
             }
           }
-          self.push(null)
+          self.push(null);
         }
       });
       s.on('error', function (e) {
@@ -68,11 +67,6 @@ function OrderedStreams(streams, options) {
 
 util.inherits(OrderedStreams, Readable);
 
-OrderedStreams.prototype._read = function () {
-  var data = this._buff[this._currentIndex];
-  if (data.length) {
-    this.push(data);
-  }
-};
+OrderedStreams.prototype._read = function () {};
 
 module.exports = OrderedStreams;
