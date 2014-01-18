@@ -18,8 +18,7 @@ function OrderedStreams(streams, options) {
   if (streams.length === 0) {
     this.push(null); // no streams, close
   } else {
-    // initial index in list of streams
-    this._currentIndex = 0;
+    // stream data buffer
     this._buff = {};
     this._totalStreams = streams.length;
     this._openedStreams = streams.length;
@@ -33,19 +32,16 @@ function OrderedStreams(streams, options) {
       }
 
       s.on('data', function (data) {
-        if (i === self._currentIndex) {
-          // data got from stream, which is at current index
+        if (i === 0) {
+          // from first stream we simply push data
           self.push(data);
         } else {
           self._buff[i].push(data); // store in buffer for future
         }
       });
       s.on('end', function () {
-        if (i === self._currentIndex) {
-          // stream ended and it at current index
-          self._currentIndex++;
-        }
         if (!--self._openedStreams) {
+          // no more opened streams
           // flush buffered data (if any) before end
           for (var j = 0; j < self._totalStreams; j++) {
             while (self._buff[j].length) {
@@ -56,9 +52,6 @@ function OrderedStreams(streams, options) {
         }
       });
       s.on('error', function (e) {
-        if (i === self._currentIndex) {
-          self._currentIndex++;
-        }
         self.emit('error', e);
       });
     });
