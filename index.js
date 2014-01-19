@@ -31,8 +31,8 @@ function OrderedStreams(streams, options) {
         throw new Error('All input streams must be readable');
       }
 
-      if (!self._buff[i]) {
-        self._buff[i] = [];
+      if (i > 0) {
+        self._buff[i] = self._buff[i] || [];
       }
 
       s.on('data', function (data) {
@@ -45,14 +45,7 @@ function OrderedStreams(streams, options) {
       });
       s.on('end', function () {
         if (!--self._openedStreams) {
-          // no more opened streams
-          // flush buffered data (if any) before end
-          for (var j = 0; j < self._totalStreams; j++) {
-            while (self._buff[j].length) {
-              self.push(self._buff[j].shift());
-            }
-          }
-          self.push(null);
+          self._flush();
         }
       });
       s.on('error', function (e) {
@@ -65,5 +58,16 @@ function OrderedStreams(streams, options) {
 util.inherits(OrderedStreams, Readable);
 
 OrderedStreams.prototype._read = function () {};
+
+OrderedStreams.prototype._flush = function () {
+  // no more opened streams
+  // flush buffered data (if any) before end
+  for (var j = 1; j < this._totalStreams; j++) {
+    while (this._buff[j].length) {
+      this.push(this._buff[j].shift());
+    }
+  }
+  this.push(null);
+};
 
 module.exports = OrderedStreams;
