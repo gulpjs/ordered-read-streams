@@ -17,56 +17,54 @@ function OrderedStreams(streams, options) {
 
   Readable.call(this, options);
 
-  var self = this;
-
   if (streams.length === 0) {
     this.push(null); // no streams, close
-  } else {
-    // stream data buffer
-    this._buff = {};
-    this._totalStreams = streams.length;
-    this._openedStreams = streams.length;
-    streams.forEach(function (s, i) {
-      if (!s.readable) {
-        throw new Error('All input streams must be readable');
-      }
-
-      if (i > 0) {
-        self._buff[i] = self._buff[i] || [];
-      }
-
-      s.on('data', function (data) {
-        if (i === 0) {
-          // from first stream we simply push data
-          self.push(data);
-        } else {
-          self._buff[i].push(data); // store in buffer for future
-        }
-      });
-      s.on('end', function () {
-        if (!--self._openedStreams) {
-          self._flush();
-        }
-      });
-      s.on('error', function (e) {
-        self.emit('error', e);
-      });
-    });
+    return;
   }
+
+  // stream data buffer
+  this._buffs = [];
+
+  streams.forEach(function (s, i) {
+    if (!s.readable) {
+      throw new Error('All input streams must be readable');
+    }
+    s.on('error', function (e) {
+      this.emit('error', e);
+    }.bind(this));
+
+    var buff = [];
+    this._buffs.push(buff);
+
+    s.on('data', buff.unshift.bind(buff));
+    s.on('end', flushStreamAtIndex.bind(this, i));
+  }, this);
 }
 
 util.inherits(OrderedStreams, Readable);
 
+function flushStreamAtIndex (index) {
+  this._buffs[index].finished = true;
+  this._flush();
+}
+
 OrderedStreams.prototype._read = function () {};
 
 OrderedStreams.prototype._flush = function () {
-  // no more opened streams
-  // flush buffered data (if any) before end
-  for (var j = 1; j < this._totalStreams; j++) {
-    while (this._buff[j].length) {
-      this.push(this._buff[j].shift());
+  for (var i = 0, buffs = this._buffs, l = buffs.length; i < l; i++) {
+    if (buffs[i].finished !== true) {
+      return;
+    }
+    // every buffs before index are all finished, ready to flush
+    for (var j = 0; j <= i; j++) {
+      var buffAtIndex = buffs[j];
+      while (buffAtIndex.length) {
+        this.push(buffAtIndex.pop());
+      }
     }
   }
+  // no more opened streams
+  // flush buffered data (if any) before end
   this.push(null);
 };
 
