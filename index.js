@@ -17,13 +17,13 @@ function OrderedStreams(streams, options) {
 
   Readable.call(this, options);
 
+  // stream data buffer
+  this._buffs = [];
+
   if (streams.length === 0) {
     this.push(null); // no streams, close
     return;
-  }
-
-  // stream data buffer
-  this._buffs = [];
+  }  
 
   streams.forEach(function (s, i) {
     if (!s.readable) {
