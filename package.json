@@ -1,6 +1,6 @@
 {
   "name": "ordered-read-streams",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Combines array of streams into one read stream in strict order",
   "main": "index.js",
   "scripts": {
