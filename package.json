@@ -18,5 +18,9 @@
     "through2": "~0.4.0",
     "jshint": "~2.4.1",
     "pre-commit": "0.0.4"
+  },
+  "dependencies": {
+    "isstream": "^0.1.1",
+    "readable-stream": "^1.0.33"
   }
 }
