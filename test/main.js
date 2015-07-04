@@ -1,10 +1,12 @@
-var should = require('should');
+/* global it, describe */
+
+require('should');
 var through = require('through2');
-var OrderedStreams = require('../');
+var OrderedStreams = require('..');
 
 describe('ordered-read-streams', function () {
   it('should end if no streams are given', function (done) {
-    var streams = OrderedStreams();
+    var streams = new OrderedStreams();
     streams.on('data', function () {
       done('error');
     });
@@ -23,18 +25,9 @@ describe('ordered-read-streams', function () {
   });
 
   it('should emit data from all streams', function(done) {
-    var s1 = through.obj(function (data, enc, next) {
-      this.push(data);
-      next();
-    });
-    var s2 = through.obj(function (data, enc, next) {
-      this.push(data);
-      next();
-    });
-    var s3 = through.obj(function (data, enc, next) {
-      this.push(data);
-      next();
-    });
+    var s1 = through.obj();
+    var s2 = through.obj();
+    var s3 = through.obj();
 
     var streams = new OrderedStreams([s1, s2, s3]);
     var results = [];
@@ -60,10 +53,7 @@ describe('ordered-read-streams', function () {
   });
 
   it('should emit all data event from each stream', function (done) {
-    var s = through.obj(function (data, enc, next) {
-      this.push(data);
-      next();
-    });
+    var s = through.obj();
 
     var streams = new OrderedStreams(s);
     var results = [];
@@ -132,10 +122,7 @@ describe('ordered-read-streams', function () {
       this.emit('error', new Error('stahp!'));
       next();
     });
-    var s2 = through.obj(function (data, enc, next) {
-      this.push(data);
-      next();
-    });
+    var s2 = through.obj();
 
     var errMsg;
     var streamData;
