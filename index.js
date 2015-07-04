@@ -2,40 +2,40 @@ var Readable = require('readable-stream/readable');
 var isReadable = require('is-stream').readable;
 var util = require('util');
 
-function addStream(streams, stream)
-{
-  if(!isReadable(stream)) throw new Error('All input streams must be readable');
+function addStream (streams, stream) {
+  if (!isReadable(stream)) {
+    throw new Error('All input streams must be readable');
+  }
 
   var self = this;
 
   stream._buffer = [];
 
-  stream.on('readable', function()
-  {
+  stream.on('readable', function () {
     var chunk = stream.read();
-    if (chunk === null)
+    if (chunk === null) {
       return;
+    }
 
-    if(this === streams[0])
+    if (this === streams[0]) {
       self.push(chunk);
-
-    else
+    } else {
       this._buffer.push(chunk);
+    }
   });
 
-  stream.on('end', function()
-  {
-    for(var stream = streams[0];
-        stream && stream._readableState.ended;
-        stream = streams[0])
-    {
-      while(stream._buffer.length)
+  stream.on('end', function () {
+    for (var stream = streams[0]; stream && stream._readableState.ended; stream = streams[0]) {
+      while (stream._buffer.length) {
         self.push(stream._buffer.shift());
+      }
 
       streams.shift();
     }
 
-    if(!streams.length) self.push(null);
+    if (!streams.length) {
+      self.push(null);
+    }
   });
 
   stream.on('error', this.emit.bind(this, 'error'));
@@ -44,7 +44,7 @@ function addStream(streams, stream)
 }
 
 
-function OrderedStreams(streams, options) {
+function OrderedStreams (streams, options) {
   if (!(this instanceof(OrderedStreams))) {
     return new OrderedStreams(streams, options);
   }
@@ -56,21 +56,21 @@ function OrderedStreams(streams, options) {
 
   Readable.call(this, options);
 
-
-  if(!Array.isArray(streams)) streams = [streams];
-  if(!streams.length) return this.push(null);  // no streams, close
-
+  if (!Array.isArray(streams)) {
+    streams = [streams];
+  }
+  if (!streams.length) {
+    return this.push(null);  // no streams, close
+  }
 
   var addStream_bind = addStream.bind(this, []);
 
-
-  streams.forEach(function(item)
-  {
-    if(Array.isArray(item))
+  streams.forEach(function (item) {
+    if (Array.isArray(item)) {
       item.forEach(addStream_bind);
-
-    else
+    } else {
       addStream_bind(item);
+    }
   });
 }
 util.inherits(OrderedStreams, Readable);
