@@ -25,7 +25,9 @@ function addStream (streams, stream) {
   });
 
   stream.on('end', function () {
-    for (var stream = streams[0]; stream && stream._readableState.ended; stream = streams[0]) {
+    for (var stream = streams[0];
+      stream && stream._readableState.ended;
+      stream = streams[0]) {
       while (stream._buffer.length) {
         self.push(stream._buffer.shift());
       }
@@ -42,7 +44,6 @@ function addStream (streams, stream) {
 
   streams.push(stream);
 }
-
 
 function OrderedStreams (streams, options) {
   if (!(this instanceof(OrderedStreams))) {
@@ -63,19 +64,18 @@ function OrderedStreams (streams, options) {
     return this.push(null);  // no streams, close
   }
 
-  var addStream_bind = addStream.bind(this, []);
+  var addStreamBinded = addStream.bind(this, []);
 
   streams.forEach(function (item) {
     if (Array.isArray(item)) {
-      item.forEach(addStream_bind);
+      item.forEach(addStreamBinded);
     } else {
-      addStream_bind(item);
+      addStreamBinded(item);
     }
   });
 }
 util.inherits(OrderedStreams, Readable);
 
 OrderedStreams.prototype._read = function () {};
-
 
 module.exports = OrderedStreams;

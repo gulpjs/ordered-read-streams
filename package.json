@@ -6,7 +6,7 @@
     "index.js"
   ],
   "scripts": {
-    "test": "jshint *.js test/*.js && mocha"
+    "test": "jscs *.js test/*js && jshint *.js test/*.js && mocha"
   },
   "repository": "armed/ordered-read-streams",
   "author": "Artem Medeusheyev <artem.medeusheyev@gmail.com>",
@@ -16,10 +16,11 @@
     "readable-stream": "^2.0.1"
   },
   "devDependencies": {
-    "should": "^7.0.1",
-    "mocha": "^2.2.5",
-    "through2": "^2.0.0",
+    "jscs": "^1.13.1",
     "jshint": "^2.8.0",
-    "pre-commit": "^1.0.10"
+    "mocha": "^2.2.5",
+    "pre-commit": "^1.0.10",
+    "should": "^7.0.1",
+    "through2": "^2.0.0"
   }
 }

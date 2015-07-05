@@ -13,8 +13,8 @@ describe('ordered-read-streams', function () {
     streams.on('end', done);
   });
 
-  it('should throw error if one or more streams are not readable', function (done) {
-    var writable = { readable: false };
+  it('should throw error if stream is not readable', function (done) {
+    var writable = {readable: false};
 
     try {
       new OrderedStreams(writable);
