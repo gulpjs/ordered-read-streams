@@ -1,4 +1,4 @@
-var Readable = require('readable-stream/readable');
+var Transform = require('readable-stream/transform');
 var isReadable = require('is-stream').readable;
 var util = require('util');
 
@@ -55,7 +55,7 @@ function OrderedStreams (streams, options) {
 
   options.objectMode = true;
 
-  Readable.call(this, options);
+  Transform.call(this, options);
 
   if (!Array.isArray(streams)) {
     streams = [streams];
@@ -74,8 +74,11 @@ function OrderedStreams (streams, options) {
     }
   });
 }
-util.inherits(OrderedStreams, Readable);
+util.inherits(OrderedStreams, Transform);
 
-OrderedStreams.prototype._read = function () {};
+OrderedStreams.prototype._transform = function (chunk, enc, cb) {
+  // forward writes
+  cb(null, chunk);
+};
 
 module.exports = OrderedStreams;
