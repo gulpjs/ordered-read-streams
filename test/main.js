@@ -52,6 +52,32 @@ describe('ordered-read-streams', function () {
     s3.end();
   });
 
+  it('passes through writes', function(done) {
+    var s1 = through.obj();
+    var s2 = through.obj();
+
+    var streams = new OrderedStreams([s1, s2]);
+    var results = [];
+    streams.on('data', function (data) {
+      results.push(data);
+    });
+    streams.on('end', function () {
+      results.length.should.be.exactly(3);
+      results[0].should.equal('stream 1');
+      results[1].should.equal('upstream');
+      results[2].should.equal('stream 2');
+      done();
+    });
+
+    s1.write('stream 1');
+    s1.end();
+
+    streams.write('upstream');
+
+    s2.write('stream 2');
+    s2.end();
+  });
+
   it('should emit all data event from each stream', function (done) {
     var s = through.obj();
 
