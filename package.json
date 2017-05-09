@@ -12,7 +12,6 @@
   "author": "Artem Medeusheyev <artem.medeusheyev@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "is-stream": "^1.0.1",
     "readable-stream": "^2.0.1"
   },
   "devDependencies": {
