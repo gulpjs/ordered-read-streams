@@ -13,14 +13,13 @@ function addStream (streams, stream) {
 
   stream.on('readable', function () {
     var chunk = stream.read();
-    if (chunk === null) {
-      return;
-    }
-
-    if (this === streams[0]) {
-      self.push(chunk);
-    } else {
-      this._buffer.push(chunk);
+    while (chunk) {
+      if (this === streams[0]) {
+        self.push(chunk);
+      } else {
+        this._buffer.push(chunk);
+      }
+      chunk = stream.read();
     }
   });
 

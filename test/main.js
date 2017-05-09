@@ -1,147 +1,166 @@
 /* global it, describe */
 
-require('should');
-var through = require('through2');
+var expect = require('expect');
+
+var miss = require('mississippi');
+
 var OrderedStreams = require('..');
 
-describe('ordered-read-streams', function () {
-  it('should end if no streams are given', function (done) {
-    var streams = new OrderedStreams();
-    streams.on('data', function () {
-      done('error');
-    });
-    streams.on('end', done);
-  });
+var to = miss.to;
+var from = miss.from;
+var pipe = miss.pipe;
+var concat = miss.concat;
 
-  it('should throw error if stream is not readable', function (done) {
-    var writable = {readable: false};
-
-    try {
-      new OrderedStreams(writable);
-    } catch (e) {
-      e.message.should.equal('All input streams must be readable');
-      done();
+function fromOnce(fn) {
+  var called = false;
+  return from.obj(function(size, next) {
+    if (called) {
+      return next(null, null);
     }
+    called = true;
+    fn.apply(this, arguments);
+  });
+}
+
+describe('ordered-read-streams', function () {
+
+  it('ends if no streams are given', function (done) {
+    var streams = new OrderedStreams();
+
+    pipe([
+      streams,
+      concat()
+    ], done);
   });
 
-  it('should emit data from all streams', function(done) {
-    var s1 = through.obj();
-    var s2 = through.obj();
-    var s3 = through.obj();
+  it('throws an error if stream is not readable', function (done) {
+    var writable = to();
+
+    function withWritable() {
+      new OrderedStreams(writable);
+    }
+
+    expect(withWritable).toThrow('All input streams must be readable');
+
+    done();
+  });
+
+  it('emits data from all streams', function(done) {
+    var s1 = from.obj([{value: 'stream 1'}]);
+    var s2 = from.obj([{value: 'stream 2'}]);
+    var s3 = from.obj([{value: 'stream 3'}]);
 
     var streams = new OrderedStreams([s1, s2, s3]);
-    var results = [];
-    streams.on('data', function (data) {
-      results.push(data);
-    });
-    streams.on('end', function () {
-      results.length.should.be.exactly(3);
-      results[0].should.equal('stream 1');
-      results[1].should.equal('stream 2');
-      results[2].should.equal('stream 3');
-      done();
-    });
 
-    s1.write('stream 1');
-    s1.end();
+    function assert(results) {
+      expect(results.length).toEqual(3);
+      expect(results[0]).toEqual({value: 'stream 1'});
+      expect(results[1]).toEqual({value: 'stream 2'});
+      expect(results[2]).toEqual({value: 'stream 3'});
+    }
 
-    s2.write('stream 2');
-    s2.end();
-
-    s3.write('stream 3');
-    s3.end();
+    pipe([
+      streams,
+      concat(assert)
+    ], done);
   });
 
-  it('should emit all data event from each stream', function (done) {
-    var s = through.obj();
+  it('emits all data event from each stream', function (done) {
+    var s = from.obj([
+      {value: 'data1'},
+      {value: 'data2'},
+      {value: 'data3'}
+    ]);
 
     var streams = new OrderedStreams(s);
-    var results = [];
-    streams.on('data', function (data) {
-      results.push(data);
-    });
-    streams.on('end', function () {
-      results.length.should.be.exactly(3);
-      done();
-    });
 
-    s.write('data1');
-    s.write('data2');
-    s.write('data3');
-    s.end();
+    function assert(results) {
+      expect(results.length).toEqual(3);
+    }
+
+    pipe([
+      streams,
+      concat(assert)
+    ], done);
   });
 
-  it('should preserve streams order', function(done) {
-    var s1 = through.obj(function (data, enc, next) {
-      var self = this;
+  it('preserves streams order', function(done) {
+    var s1 = fromOnce(function (size, next) {
       setTimeout(function () {
-        self.push(data);
-        next();
+        next(null, {value: 'stream 1'});
       }, 200);
     });
-    var s2 = through.obj(function (data, enc, next) {
-      var self = this;
+    var s2 = fromOnce(function (size, next) {
       setTimeout(function () {
-        self.push(data);
-        next();
+        next(null, {value: 'stream 2'});
       }, 30);
     });
-    var s3 = through.obj(function (data, enc, next) {
-      var self = this;
+    var s3 = fromOnce(function (size, next) {
       setTimeout(function () {
-        self.push(data);
-        next();
+        next(null, {value: 'stream 3'});
       }, 100);
     });
 
     var streams = new OrderedStreams([s1, s2, s3]);
-    var results = [];
-    streams.on('data', function (data) {
-      results.push(data);
-    });
-    streams.on('end', function () {
-      results.length.should.be.exactly(3);
-      results[0].should.equal('stream 1');
-      results[1].should.equal('stream 2');
-      results[2].should.equal('stream 3');
-      done();
-    });
 
-    s1.write('stream 1');
-    s1.end();
+    function assert(results) {
+      expect(results.length).toEqual(3);
+      expect(results[0]).toEqual({value: 'stream 1'});
+      expect(results[1]).toEqual({value: 'stream 2'});
+      expect(results[2]).toEqual({value: 'stream 3'});
+    }
 
-    s2.write('stream 2');
-    s2.end();
-
-    s3.write('stream 3');
-    s3.end();
+    pipe([
+      streams,
+      concat(assert)
+    ], done);
   });
 
-  it('should emit stream errors downstream', function (done) {
-    var s = through.obj(function (data, enc, next) {
-      this.emit('error', new Error('stahp!'));
-      next();
+  it('emits stream errors downstream', function (done) {
+    var s = fromOnce(function(size, next) {
+      setTimeout(function () {
+        next(new Error('stahp!'));
+      }, 500);
     });
-    var s2 = through.obj();
+    var s2 = from.obj([{value: 'Im ok!'}]);
 
-    var errMsg;
-    var streamData;
     var streams = new OrderedStreams([s, s2]);
-    streams.on('data', function (data) {
-      streamData = data;
-    });
-    streams.on('error', function (err) {
-      errMsg = err.message;
-    });
-    streams.on('end', function () {
-      errMsg.should.equal('stahp!');
-      streamData.should.equal('Im ok!');
-      done();
-    });
 
-    s.write('go');
-    s.end();
-    s2.write('Im ok!');
-    s2.end();
+    function assert(err) {
+      expect(err.message).toEqual('stahp!');
+      done();
+    }
+
+    pipe([
+      streams,
+      concat()
+    ], assert);
+  });
+
+  it('emits received data before a stream errors downstream', function (done) {
+    var s = fromOnce(function(size, next) {
+      setTimeout(function () {
+        next(new Error('stahp!'));
+      }, 500);
+    });
+    var s2 = from.obj([{value: 'Im ok!'}]);
+
+    // Invert the order to emit data first
+    var streams = new OrderedStreams([s2, s]);
+
+    function assertData(chunk, enc, next) {
+      expect(chunk).toEqual({value: 'Im ok!'});
+      next();
+    }
+
+    function assertErr(err) {
+      expect(err.message).toEqual('stahp!');
+      done();
+    }
+
+    pipe([
+      streams,
+      to.obj(assertData)
+    ], assertErr);
   });
 });
