@@ -43,11 +43,18 @@ function addStream (streams, stream) {
   });
 
   stream.on('end', function () {
-    for (var stream = streams[0];
-      stream && stream._readableState.ended;
-      stream = streams[0]) {
+    if (this !== streams[0]) {
+      return;
+    }
+
+    var stream;
+    while ((stream = streams[0])) {
       while (stream._buffer.length) {
         self.push(stream._buffer.shift());
+      }
+
+      if (!stream._readableState.ended) {
+        break;
       }
 
       streams.shift();
