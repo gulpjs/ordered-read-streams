@@ -47,8 +47,12 @@ function addStream (streams, stream) {
       return;
     }
 
+    self.emit('stream:end', this);
+
     var stream;
     while ((stream = streams[0])) {
+      self.emit('stream:start', stream);
+
       while (stream._buffer.length) {
         self.push(stream._buffer.shift());
       }
@@ -56,6 +60,8 @@ function addStream (streams, stream) {
       if (!stream._readableState.ended) {
         break;
       }
+
+      self.emit('stream:end', stream);
 
       streams.shift();
     }
@@ -68,6 +74,10 @@ function addStream (streams, stream) {
   stream.on('error', this.emit.bind(this, 'error'));
 
   streams.push(stream);
+
+  if (stream === streams[0]) {
+    self.emit('stream:start', stream);
+  }
 }
 
 function OrderedStreams (streams, options) {
