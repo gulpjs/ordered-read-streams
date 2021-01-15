@@ -10,7 +10,7 @@
     "pretest": "npm run lint",
     "test": "nyc mocha --async-only"
   },
-  "repository": "armed/ordered-read-streams",
+  "repository": "gulpjs/ordered-read-streams",
   "author": "Gulp Team <team@gulpjs.com> (https://gulpjs.com/)",
   "license": "MIT",
   "dependencies": {
