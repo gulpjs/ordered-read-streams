@@ -6,6 +6,8 @@
     "index.js"
   ],
   "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
     "test": "nyc mocha --async-only"
   },
   "repository": "armed/ordered-read-streams",
@@ -15,8 +17,9 @@
     "readable-stream": "^2.0.1"
   },
   "devDependencies": {
+    "eslint": "^7.0.0",
+    "eslint-config-gulp": "^5.0.0",
     "expect": "^26.0.1",
-    "jshint": "^2.8.0",
     "mississippi": "^1.3.0",
     "mocha": "^7.1.2",
     "nyc": "^15.0.1",
