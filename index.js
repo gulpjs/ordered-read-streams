@@ -21,7 +21,7 @@ function isReadable(stream) {
   return true;
 }
 
-function addStream (streams, stream) {
+function addStream(streams, stream) {
   if (!isReadable(stream)) {
     throw new Error('All input streams must be readable');
   }
@@ -43,9 +43,11 @@ function addStream (streams, stream) {
   });
 
   stream.on('end', function () {
-    for (var stream = streams[0];
+    for (
+      var stream = streams[0];
       stream && stream._readableState.ended;
-      stream = streams[0]) {
+      stream = streams[0]
+    ) {
       while (stream._buffer.length) {
         self.push(stream._buffer.shift());
       }
@@ -63,8 +65,8 @@ function addStream (streams, stream) {
   streams.push(stream);
 }
 
-function OrderedStreams (streams, options) {
-  if (!(this instanceof(OrderedStreams))) {
+function OrderedStreams(streams, options) {
+  if (!(this instanceof OrderedStreams)) {
     return new OrderedStreams(streams, options);
   }
 
@@ -79,7 +81,7 @@ function OrderedStreams (streams, options) {
     streams = [streams];
   }
   if (!streams.length) {
-    return this.push(null);  // no streams, close
+    return this.push(null); // no streams, close
   }
 
   var addStreamBinded = addStream.bind(this, []);

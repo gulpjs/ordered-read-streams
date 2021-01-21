@@ -25,27 +25,27 @@ var s1 = through.obj(function (data, enc, next) {
   setTimeout(function () {
     self.push(data);
     next();
-  }, 200)
+  }, 200);
 });
 var s2 = through.obj(function (data, enc, next) {
   var self = this;
   setTimeout(function () {
     self.push(data);
     next();
-  }, 30)
+  }, 30);
 });
 var s3 = through.obj(function (data, enc, next) {
   var self = this;
   setTimeout(function () {
     self.push(data);
     next();
-  }, 100)
+  }, 100);
 });
 
 var streams = new Ordered([s1, s2, s3]);
 streams.on('data', function (data) {
   console.log(data);
-})
+});
 
 s1.write('stream 1');
 s1.end();
