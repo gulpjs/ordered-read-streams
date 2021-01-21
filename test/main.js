@@ -1,5 +1,3 @@
-/* global it, describe */
-
 var expect = require('expect');
 
 var miss = require('mississippi');

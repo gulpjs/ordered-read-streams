@@ -1,16 +1,20 @@
-# ordered-read-streams [![NPM version](https://img.shields.io/npm/v/ordered-read-streams.svg)](http://badge.fury.io/js/ordered-read-streams) [![Build Status](https://travis-ci.org/armed/ordered-read-streams.svg?branch=master)](https://travis-ci.org/armed/ordered-read-streams)
+<p align="center">
+  <a href="http://gulpjs.com">
+    <img height="257" width="114" src="https://raw.githubusercontent.com/gulpjs/artwork/master/gulp-2x.png">
+  </a>
+</p>
+
+# ordered-read-streams
+
+[![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![Build Status][ci-image]][ci-url] [![Coveralls Status][coveralls-image]][coveralls-url]
 
 Combines array of streams into one read stream in strict order.
-
-## Installation
-
-`npm install ordered-read-streams`
 
 ## Overview
 
 `ordered-read-streams` handles all data/errors from input streams in parallel, but emits data/errors in strict order in which streams are passed to constructor. This is `objectMode = true` stream.
 
-## Example
+## Usage
 
 ```js
 var through = require('through2');
@@ -52,6 +56,7 @@ s2.end();
 s3.write('stream 3');
 s3.end();
 ```
+
 Ouput will be:
 
 ```
@@ -60,6 +65,18 @@ stream 2
 stream 3
 ```
 
-## Licence
+## License
 
 MIT
+
+<!-- prettier-ignore-start -->
+[downloads-image]: https://img.shields.io/npm/dm/ordered-read-streams.svg?style=flat-square
+[npm-url]: https://www.npmjs.com/package/ordered-read-streams
+[npm-image]: https://img.shields.io/npm/v/ordered-read-streams.svg?style=flat-square
+
+[ci-url]: https://github.com/gulpjs/ordered-read-streams/actions?query=workflow:dev
+[ci-image]: https://img.shields.io/github/workflow/status/gulpjs/ordered-read-streams/dev?style=flat-square
+
+[coveralls-url]: https://coveralls.io/r/gulpjs/ordered-read-streams
+[coveralls-image]: https://img.shields.io/coveralls/gulpjs/ordered-read-streams/master.svg?style=flat-square
+<!-- prettier-ignore-end -->
