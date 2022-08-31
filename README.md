@@ -8,62 +8,72 @@
 
 [![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![Build Status][ci-image]][ci-url] [![Coveralls Status][coveralls-image]][coveralls-url]
 
-Combines array of streams into one read stream in strict order.
-
-## Overview
-
-`ordered-read-streams` handles all data/errors from input streams in parallel, but emits data/errors in strict order in which streams are passed to constructor. This is `objectMode = true` stream.
+Combines array of streams into one Readable stream in strict order.
 
 ## Usage
 
 ```js
-var through = require('through2');
-var Ordered = require('ordered-read-streams');
+var { Readable } = require('streamx');
+var ordered = require('ordered-read-streams');
 
-var s1 = through.obj(function (data, enc, next) {
-  var self = this;
-  setTimeout(function () {
-    self.push(data);
-    next();
-  }, 200);
+var s1 = new Readable({
+  read: function (cb) {
+    var self = this;
+    if (self.called) {
+      self.push(null);
+      return cb(null);
+    }
+    setTimeout(function () {
+      self.called = true;
+      self.push('stream 1');
+      cb(null);
+    }, 200);
+  },
 });
-var s2 = through.obj(function (data, enc, next) {
-  var self = this;
-  setTimeout(function () {
-    self.push(data);
-    next();
-  }, 30);
+var s2 = new Readable({
+  read: function (cb) {
+    var self = this;
+    if (self.called) {
+      self.push(null);
+      return cb(null);
+    }
+    setTimeout(function () {
+      self.called = true;
+      self.push('stream 2');
+      cb(null);
+    }, 30);
+  },
 });
-var s3 = through.obj(function (data, enc, next) {
-  var self = this;
-  setTimeout(function () {
-    self.push(data);
-    next();
-  }, 100);
+var s3 = new Readable({
+  read: function (cb) {
+    var self = this;
+    if (self.called) {
+      self.push(null);
+      return cb(null);
+    }
+    setTimeout(function () {
+      self.called = true;
+      self.push('stream 3');
+      cb(null);
+    }, 100);
+  },
 });
 
-var streams = new Ordered([s1, s2, s3]);
-streams.on('data', function (data) {
+var readable = ordered([s1, s2, s3]);
+readable.on('data', function (data) {
   console.log(data);
+  // Logs:
+  // stream 1
+  // stream 2
+  // stream 3
 });
-
-s1.write('stream 1');
-s1.end();
-
-s2.write('stream 2');
-s2.end();
-
-s3.write('stream 3');
-s3.end();
 ```
 
-Ouput will be:
+## API
 
-```
-stream 1
-stream 2
-stream 3
-```
+### `ordered(streams, [options])`
+
+Takes an array of Readable streams and produces a single Readable stream that will consume the provided streams in strict order. The produced Readable stream respects backpressure on itself and any provided streams.
 
 ## License
 
