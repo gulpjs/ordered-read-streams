@@ -312,6 +312,82 @@ function suite(moduleName) {
         assertErr
       );
     });
+
+    it('destroys all readable streams if the wrapper is destroyed', function (done) {
+      var s1 = stream.Readable.from([{ value: 'stream 1' }]);
+      var s2 = stream.Readable.from([{ value: 'stream 2' }]);
+      var s3 = stream.Readable.from([{ value: 'stream 3' }]);
+
+      var streams = new OrderedStreams([s1, s2, s3]);
+
+      var errors = [];
+
+      s1.on('error', function (err) {
+        errors.push(err);
+        assertErr();
+      });
+      s2.on('error', function (err) {
+        errors.push(err);
+        assertErr();
+      });
+      s3.on('error', function (err) {
+        errors.push(err);
+        assertErr();
+      });
+
+      function assertErr() {
+        if (errors.length === 3) {
+          expect(errors[0].message).toEqual('Wrapper destroyed');
+          expect(errors[1].message).toEqual('Wrapper destroyed');
+          expect(errors[2].message).toEqual('Wrapper destroyed');
+          done();
+        }
+      }
+
+      streams.destroy();
+    });
+
+    it('destroys the wrapper and other streams if any readable stream is destroyed', function (done) {
+      var s1 = stream.Readable.from([{ value: 'stream 1' }]);
+      var s2 = stream.Readable.from([{ value: 'stream 2' }]);
+      var s3 = stream.Readable.from([{ value: 'stream 3' }]);
+
+      var streams = new OrderedStreams([s1, s2, s3]);
+
+      var closed = [];
+
+      s1.on('close', function () {
+        closed.push('s1');
+        assert();
+      });
+      s2.on('close', function () {
+        closed.push('s2');
+        assert();
+      });
+      s3.on('close', function () {
+        closed.push('s3');
+        assert();
+      });
+      streams.on('close', function () {
+        closed.push('wrapper');
+      });
+
+      function assert() {
+        if (closed.length === 4) {
+          // `destroy` called upon
+          expect(closed[0]).toEqual('s2');
+          // Wrapper destroyed first
+          expect(closed[1]).toEqual('wrapper');
+          // Then the other 2 streams get destroyed
+          expect(closed[2]).toEqual('s1');
+          expect(closed[3]).toEqual('s3');
+
+          done();
+        }
+      }
+
+      s2.destroy();
+    });
   });
 }
 

@@ -27,15 +27,61 @@ function OrderedStreams(streams, options) {
 
   options = Object.assign({}, options, {
     read: read,
+    predestroy: predestroy,
   });
 
-  streams.forEach(function (stream) {
+  var readable = new Readable(options);
+
+  var streamIdx = 0;
+
+  var destroyedIdx = -1;
+  var destroyedByError = false;
+  var readableClosed = false;
+
+  streams.forEach(function (stream, idx) {
     if (!isReadable(stream)) {
       throw new Error('All input streams must be readable');
     }
+
+    var readableEnded = false;
+
+    stream.once('error', onError);
+    stream.once('end', onEnd);
+    stream.once('close', onClose);
+
+    function onError() {
+      destroyedByError = true;
+    }
+
+    function onEnd() {
+      readableEnded = true;
+    }
+
+    function onClose() {
+      destroyedIdx = idx;
+      readableClosed = true;
+      if (!readableEnded) {
+        readable.destroy();
+      }
+    }
   });
 
-  var streamIdx = 0;
+  function predestroy() {
+    streams.forEach(function (stream, idx) {
+      if (destroyedIdx === idx) {
+        return;
+      }
+
+      if (destroyedByError) {
+        return stream.destroy();
+      }
+      if (readableClosed) {
+        return stream.destroy();
+      }
+
+      stream.destroy(new Error('Wrapper destroyed'));
+    });
+  }
 
   function read(cb) {
     var self = this;
@@ -84,7 +130,7 @@ function OrderedStreams(streams, options) {
     activeStream.resume();
   }
 
-  return new Readable(options);
+  return readable;
 }
 
 module.exports = OrderedStreams;
