@@ -47,7 +47,7 @@ function OrderedStreams(streams, options) {
     }
 
     function cleanup() {
-      activeStream.off('readable', onRead);
+      activeStream.off('data', onData);
       activeStream.off('error', onError);
       activeStream.off('end', onEnd);
     }
@@ -66,46 +66,22 @@ function OrderedStreams(streams, options) {
       read.call(self, cb);
     }
 
-    function onRead(chunk) {
-      var drained = true;
-
-      // If the chunk is null, we don't want to cleanup because the
-      // `end` event might be emitted afterwards
-      if (chunk === null) {
-        return;
+    function onData(chunk) {
+      var drained = self.push(chunk);
+      // If the stream is not drained, we pause the active stream and cleanup our handlers
+      // The activeStream will be resumed on the next call to `read`
+      if (!drained) {
+        activeStream.pause();
+        cleanup();
+        cb();
       }
-
-      while (chunk !== null && drained) {
-        drained = self.push(chunk);
-        // If our stream is not backpressured, we want to process another chunk
-        if (drained) {
-          chunk = activeStream.read();
-        }
-      }
-
-      cleanup();
-      cb(null);
     }
 
     activeStream.once('error', onError);
     activeStream.once('end', onEnd);
 
-    // Try reading the first chunk
-    var chunk = activeStream.read();
-
-    // If we backpressured the OrderedReadStream, we'll have a chunk
-    // and don't need to wait for a `readable` event
-    if (chunk) {
-      onRead(chunk);
-    } else {
-      // If the first chunk is null we want to wait for `readable` to handle both the first
-      // access and a backpressured stream
-      activeStream.once('readable', function () {
-        // Once `readable`, we need to grab the first chunk before passing it to onRead
-        var chunk = activeStream.read();
-        onRead(chunk);
-      });
-    }
+    activeStream.on('data', onData);
+    activeStream.resume();
   }
 
   return new Readable(options);
