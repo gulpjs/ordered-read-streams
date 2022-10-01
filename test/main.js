@@ -227,7 +227,11 @@ function suite(moduleName) {
         { value: 'data9' },
       ]);
 
-      var streams = new OrderedStreams([s1, s2, s3], { highWaterMark: 1 });
+      var highWaterMark = moduleName === 'streamx' ? 1024 : 1;
+
+      var streams = new OrderedStreams([s1, s2, s3], {
+        highWaterMark: highWaterMark,
+      });
 
       function assert(results) {
         expect(results.length).toEqual(9);
@@ -370,17 +374,15 @@ function suite(moduleName) {
       });
       streams.on('close', function () {
         closed.push('wrapper');
+        assert();
       });
 
       function assert() {
         if (closed.length === 4) {
-          // `destroy` called upon
-          expect(closed[0]).toEqual('s2');
-          // Wrapper destroyed first
-          expect(closed[1]).toEqual('wrapper');
-          // Then the other 2 streams get destroyed
-          expect(closed[2]).toEqual('s1');
-          expect(closed[3]).toEqual('s3');
+          expect(closed).toContain('s2');
+          expect(closed).toContain('wrapper');
+          expect(closed).toContain('s1');
+          expect(closed).toContain('s3');
 
           done();
         }
