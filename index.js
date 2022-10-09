@@ -43,10 +43,6 @@ function OrderedStreams(streams, options) {
   var streamIdx = 0;
   var activeStream = streams[streamIdx];
 
-  if (!activeStream) {
-    readable.push(null);
-  }
-
   var destroyedIdx = -1;
   var destroyedByError = false;
   var readableClosed = false;
@@ -122,7 +118,11 @@ function OrderedStreams(streams, options) {
   }
 
   function read(cb) {
-    activeStream.resume();
+    if (activeStream) {
+      activeStream.resume();
+    } else {
+      readable.push(null);
+    }
     cb();
   }
 

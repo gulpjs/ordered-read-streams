@@ -66,6 +66,24 @@ function suite(moduleName) {
       stream.pipeline([streams, concat()], done);
     });
 
+    it('does not end until it is read if no streams are given', function (done) {
+      var streams = new OrderedStreams();
+
+      var ended = false;
+
+      streams.on('end', function () {
+        ended = true;
+      });
+      setTimeout(function () {
+        expect(ended).toEqual(false);
+
+        stream.pipeline([streams, concat()], function (err) {
+          expect(ended).toEqual(true);
+          done(err);
+        });
+      }, 250);
+    });
+
     it('throws an error if stream is not readable', function (done) {
       var writable = new stream.Writable({ write: function () {} });
 
