@@ -74,10 +74,10 @@ function OrderedStreams(streams, options) {
       streamIdx++;
       activeStream = streams[streamIdx];
       cleanup();
-      if (!activeStream) {
-        readable.push(null);
-      } else {
+      if (activeStream) {
         activeStream.resume();
+      } else {
+        readable.push(null);
       }
     }
 
