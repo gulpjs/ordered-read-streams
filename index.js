@@ -1,5 +1,4 @@
-var Readable = require('readable-stream/readable');
-var util = require('util');
+var Readable = require('streamx').Readable;
 
 function isReadable(stream) {
   if (typeof stream.pipe !== 'function') {
@@ -10,92 +9,124 @@ function isReadable(stream) {
     return false;
   }
 
-  if (typeof stream._read !== 'function') {
-    return false;
-  }
-
-  if (!stream._readableState) {
+  if (typeof stream.read !== 'function') {
     return false;
   }
 
   return true;
 }
 
-function addStream(streams, stream) {
+function assertReadableStream(stream) {
   if (!isReadable(stream)) {
     throw new Error('All input streams must be readable');
   }
-
-  var self = this;
-
-  stream._buffer = [];
-
-  stream.on('readable', function () {
-    var chunk = stream.read();
-    while (chunk) {
-      if (this === streams[0]) {
-        self.push(chunk);
-      } else {
-        this._buffer.push(chunk);
-      }
-      chunk = stream.read();
-    }
-  });
-
-  stream.on('end', function () {
-    for (
-      var stream = streams[0];
-      stream && stream._readableState.ended;
-      stream = streams[0]
-    ) {
-      while (stream._buffer.length) {
-        self.push(stream._buffer.shift());
-      }
-
-      streams.shift();
-    }
-
-    if (!streams.length) {
-      self.push(null);
-    }
-  });
-
-  stream.on('error', this.emit.bind(this, 'error'));
-
-  streams.push(stream);
 }
 
 function OrderedStreams(streams, options) {
-  if (!(this instanceof OrderedStreams)) {
-    return new OrderedStreams(streams, options);
-  }
-
   streams = streams || [];
-  options = options || {};
-
-  options.objectMode = true;
-
-  Readable.call(this, options);
 
   if (!Array.isArray(streams)) {
     streams = [streams];
   }
-  if (!streams.length) {
-    return this.push(null); // no streams, close
+
+  streams = Array.prototype.concat.apply([], streams);
+
+  streams.forEach(assertReadableStream);
+
+  options = Object.assign({}, options, {
+    read: read,
+    predestroy: predestroy,
+  });
+
+  var readable = new Readable(options);
+
+  var streamIdx = 0;
+  var activeStream = streams[streamIdx];
+
+  if (!activeStream) {
+    readable.push(null);
   }
 
-  var addStreamBinded = addStream.bind(this, []);
+  var destroyedIdx = -1;
+  var destroyedByError = false;
+  var readableClosed = false;
 
-  streams.forEach(function (item) {
-    if (Array.isArray(item)) {
-      item.forEach(addStreamBinded);
-    } else {
-      addStreamBinded(item);
+  streams.forEach(setup);
+
+  function setup(stream, idx) {
+    stream.on('data', onData);
+    stream.once('error', onError);
+    stream.once('end', onEnd);
+    stream.once('close', onClose);
+
+    stream.pause();
+
+    function cleanup() {
+      stream.off('data', onData);
+      stream.off('error', onError);
+      stream.off('end', onEnd);
+      stream.off('close', onClose);
     }
-  });
-}
-util.inherits(OrderedStreams, Readable);
 
-OrderedStreams.prototype._read = function () {};
+    function onError(err) {
+      destroyedByError = true;
+      cleanup();
+      readable.destroy(err);
+    }
+
+    function onEnd() {
+      streamIdx++;
+      activeStream = streams[streamIdx];
+      cleanup();
+      if (!activeStream) {
+        readable.push(null);
+      } else {
+        activeStream.resume();
+      }
+    }
+
+    function onClose() {
+      destroyedIdx = idx;
+      readableClosed = true;
+      cleanup();
+      readable.destroy();
+    }
+  }
+
+  function predestroy() {
+    streams.forEach(destroyStream);
+  }
+
+  function destroyStream(stream, idx) {
+    if (destroyedIdx === idx) {
+      return;
+    }
+
+    if (destroyedByError) {
+      return stream.destroy();
+    }
+    if (readableClosed) {
+      return stream.destroy();
+    }
+
+    stream.destroy(new Error('Wrapper destroyed'));
+  }
+
+  function onData(chunk) {
+    var drained = readable.push(chunk);
+    // If the stream is not drained, we pause the activeStream
+    // The activeStream will be resumed on the next call to `read`
+    if (!drained) {
+      activeStream.pause();
+    }
+  }
+
+  function read(cb) {
+    activeStream.resume();
+    cb();
+  }
+
+  return readable;
+}
 
 module.exports = OrderedStreams;
