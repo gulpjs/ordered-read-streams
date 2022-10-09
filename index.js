@@ -126,6 +126,15 @@ function OrderedStreams(streams, options) {
     cb();
   }
 
+  function addSource(stream) {
+    assertReadableStream(stream);
+    var idx = streams.push(stream);
+    setup(stream, idx);
+    activeStream = streams[streamIdx];
+  }
+
+  readable.addSource = addSource;
+
   return readable;
 }
 

@@ -73,7 +73,11 @@ readable.on('data', function (data) {
 
 ### `ordered(streams, [options])`
 
-Takes an array of Readable streams and produces a single Readable stream that will consume the provided streams in strict order. The produced Readable stream respects backpressure on itself and any provided streams.
+Takes an array of `Readable` streams and produces a single `OrderedReadable` stream that will consume the provided streams in strict order. The produced `Readable` stream respects backpressure on itself and any provided streams.
+
+#### `orderedReadable.addSource(stream)`
+
+The returned `Readable` stream has an `addSource` instance function that takes appends a `Readable` stream to the list of source streams that the `OrderedReadable` is reading from.
 
 ## License
 
