@@ -43,10 +43,6 @@ function OrderedStreams(streams, options) {
   var streamIdx = 0;
   var activeStream = streams[streamIdx];
 
-  if (!activeStream) {
-    readable.push(null);
-  }
-
   var destroyedIdx = -1;
   var destroyedByError = false;
   var readableClosed = false;
@@ -78,10 +74,10 @@ function OrderedStreams(streams, options) {
       streamIdx++;
       activeStream = streams[streamIdx];
       cleanup();
-      if (!activeStream) {
-        readable.push(null);
-      } else {
+      if (activeStream) {
         activeStream.resume();
+      } else {
+        readable.push(null);
       }
     }
 
@@ -122,9 +118,22 @@ function OrderedStreams(streams, options) {
   }
 
   function read(cb) {
-    activeStream.resume();
+    if (activeStream) {
+      activeStream.resume();
+    } else {
+      readable.push(null);
+    }
     cb();
   }
+
+  function addSource(stream) {
+    assertReadableStream(stream);
+    var idx = streams.push(stream);
+    setup(stream, idx);
+    activeStream = streams[streamIdx];
+  }
+
+  readable.addSource = addSource;
 
   return readable;
 }

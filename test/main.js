@@ -66,6 +66,24 @@ function suite(moduleName) {
       stream.pipeline([streams, concat()], done);
     });
 
+    it('does not end until it is read if no streams are given', function (done) {
+      var streams = new OrderedStreams();
+
+      var ended = false;
+
+      streams.on('end', function () {
+        ended = true;
+      });
+      setTimeout(function () {
+        expect(ended).toEqual(false);
+
+        stream.pipeline([streams, concat()], function (err) {
+          expect(ended).toEqual(true);
+          done(err);
+        });
+      }, 250);
+    });
+
     it('throws an error if stream is not readable', function (done) {
       var writable = new stream.Writable({ write: function () {} });
 
@@ -389,6 +407,108 @@ function suite(moduleName) {
       }
 
       s2.destroy();
+    });
+
+    describe('addSource', function () {
+      it('can add a stream to an empty readable before reading', function (done) {
+        var streams = new OrderedStreams();
+
+        streams.addSource(
+          stream.Readable.from([
+            { value: 'data1' },
+            { value: 'data2' },
+            { value: 'data3' },
+          ])
+        );
+
+        function assert(results) {
+          expect(results.length).toEqual(3);
+        }
+
+        stream.pipeline([streams, concat(assert)], done);
+      });
+
+      it('can add a stream at the end of the readable', function (done) {
+        var s = stream.Readable.from([
+          { value: 'data1' },
+          { value: 'data2' },
+          { value: 'data3' },
+        ]);
+
+        var streams = new OrderedStreams(s);
+
+        streams.addSource(
+          stream.Readable.from([
+            { value: 'data4' },
+            { value: 'data5' },
+            { value: 'data6' },
+          ])
+        );
+
+        function assert(results) {
+          expect(results.length).toEqual(6);
+          expect(results[0]).toEqual({ value: 'data1' });
+          expect(results[1]).toEqual({ value: 'data2' });
+          expect(results[2]).toEqual({ value: 'data3' });
+          expect(results[3]).toEqual({ value: 'data4' });
+          expect(results[4]).toEqual({ value: 'data5' });
+          expect(results[5]).toEqual({ value: 'data6' });
+        }
+
+        stream.pipeline([streams, concat(assert)], done);
+      });
+
+      it('can add a stream while the readable is already flowing', function (done) {
+        var data = [
+          { value: 'data1' },
+          { value: 'data2' },
+          { value: 'data3' },
+          { value: 'data4' },
+          { value: 'data5' },
+          { value: 'data6' },
+        ];
+        var s = new stream.Readable({
+          objectMode: true,
+          read: function (cb) {
+            if (data.length > 1) {
+              this.push(data.shift());
+            } else {
+              streams.addSource(stream.Readable.from(data));
+              this.push(null);
+            }
+            if (typeof cb === 'function') {
+              cb(null);
+            }
+          },
+        });
+
+        var streams = new OrderedStreams(s);
+
+        function assert(results) {
+          expect(results.length).toEqual(6);
+          expect(results[0]).toEqual({ value: 'data1' });
+          expect(results[1]).toEqual({ value: 'data2' });
+          expect(results[2]).toEqual({ value: 'data3' });
+          expect(results[3]).toEqual({ value: 'data4' });
+          expect(results[4]).toEqual({ value: 'data5' });
+          expect(results[5]).toEqual({ value: 'data6' });
+        }
+
+        stream.pipeline([streams, concat(assert)], done);
+      });
+
+      it('throws an error if stream is not readable', function (done) {
+        var streams = new OrderedStreams();
+
+        function withWritable() {
+          var writable = new stream.Writable({ write: function () {} });
+          streams.addSource(writable);
+        }
+
+        expect(withWritable).toThrow('All input streams must be readable');
+
+        done();
+      });
     });
   });
 }
