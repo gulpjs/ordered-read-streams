@@ -1,6 +1,6 @@
 {
   "name": "ordered-read-streams",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Combines array of streams into one Readable stream in strict order.",
   "author": "Gulp Team <team@gulpjs.com> (https://gulpjs.com/)",
   "contributors": [
