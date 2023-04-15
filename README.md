@@ -89,7 +89,7 @@ MIT
 [npm-image]: https://img.shields.io/npm/v/ordered-read-streams.svg?style=flat-square
 
 [ci-url]: https://github.com/gulpjs/ordered-read-streams/actions?query=workflow:dev
-[ci-image]: https://img.shields.io/github/workflow/status/gulpjs/ordered-read-streams/dev?style=flat-square
+[ci-image]: https://img.shields.io/github/actions/workflow/status/gulpjs/ordered-read-streams/dev.yml?branch=master&style=flat-square
 
 [coveralls-url]: https://coveralls.io/r/gulpjs/ordered-read-streams
 [coveralls-image]: https://img.shields.io/coveralls/gulpjs/ordered-read-streams/master.svg?style=flat-square
