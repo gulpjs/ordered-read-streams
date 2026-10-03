@@ -13,8 +13,8 @@ Combines array of streams into one Readable stream in strict order.
 ## Usage
 
 ```js
-var { Readable } = require('streamx');
-var ordered = require('ordered-read-streams');
+var { Readable } = require("streamx");
+var ordered = require("ordered-read-streams");
 
 var s1 = new Readable({
   read: function (cb) {
@@ -25,7 +25,7 @@ var s1 = new Readable({
     }
     setTimeout(function () {
       self.called = true;
-      self.push('stream 1');
+      self.push("stream 1");
       cb(null);
     }, 200);
   },
@@ -39,7 +39,7 @@ var s2 = new Readable({
     }
     setTimeout(function () {
       self.called = true;
-      self.push('stream 2');
+      self.push("stream 2");
       cb(null);
     }, 30);
   },
@@ -53,14 +53,14 @@ var s3 = new Readable({
     }
     setTimeout(function () {
       self.called = true;
-      self.push('stream 3');
+      self.push("stream 3");
       cb(null);
     }, 100);
   },
 });
 
 var readable = ordered([s1, s2, s3]);
-readable.on('data', function (data) {
+readable.on("data", function (data) {
   console.log(data);
   // Logs:
   // stream 1

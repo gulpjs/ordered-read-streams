@@ -1,7 +1,7 @@
-var Readable = require('streamx').Readable;
+var Readable = require("streamx").Readable;
 
 function isReadable(stream) {
-  if (typeof stream.pipe !== 'function') {
+  if (typeof stream.pipe !== "function") {
     return false;
   }
 
@@ -9,7 +9,7 @@ function isReadable(stream) {
     return false;
   }
 
-  if (typeof stream.read !== 'function') {
+  if (typeof stream.read !== "function") {
     return false;
   }
 
@@ -18,7 +18,7 @@ function isReadable(stream) {
 
 function assertReadableStream(stream) {
   if (!isReadable(stream)) {
-    throw new Error('All input streams must be readable');
+    throw new Error("All input streams must be readable");
   }
 }
 
@@ -50,18 +50,18 @@ function OrderedStreams(streams, options) {
   streams.forEach(setup);
 
   function setup(stream, idx) {
-    stream.on('data', onData);
-    stream.once('error', onError);
-    stream.once('end', onEnd);
-    stream.once('close', onClose);
+    stream.on("data", onData);
+    stream.once("error", onError);
+    stream.once("end", onEnd);
+    stream.once("close", onClose);
 
     stream.pause();
 
     function cleanup() {
-      stream.off('data', onData);
-      stream.off('error', onError);
-      stream.off('end', onEnd);
-      stream.off('close', onClose);
+      stream.off("data", onData);
+      stream.off("error", onError);
+      stream.off("end", onEnd);
+      stream.off("close", onClose);
     }
 
     function onError(err) {
@@ -105,7 +105,7 @@ function OrderedStreams(streams, options) {
       return stream.destroy();
     }
 
-    stream.destroy(new Error('Wrapper destroyed'));
+    stream.destroy(new Error("Wrapper destroyed"));
   }
 
   function onData(chunk) {
