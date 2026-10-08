@@ -13,8 +13,8 @@ Combines array of streams into one Readable stream in strict order.
 ## Usage
 
 ```js
-var { Readable } = require('streamx');
-var ordered = require('ordered-read-streams');
+var { Readable } = require("streamx");
+var ordered = require("ordered-read-streams");
 
 var s1 = new Readable({
   read: function (cb) {
@@ -25,7 +25,7 @@ var s1 = new Readable({
     }
     setTimeout(function () {
       self.called = true;
-      self.push('stream 1');
+      self.push("stream 1");
       cb(null);
     }, 200);
   },
@@ -39,7 +39,7 @@ var s2 = new Readable({
     }
     setTimeout(function () {
       self.called = true;
-      self.push('stream 2');
+      self.push("stream 2");
       cb(null);
     }, 30);
   },
@@ -53,14 +53,14 @@ var s3 = new Readable({
     }
     setTimeout(function () {
       self.called = true;
-      self.push('stream 3');
+      self.push("stream 3");
       cb(null);
     }, 100);
   },
 });
 
 var readable = ordered([s1, s2, s3]);
-readable.on('data', function (data) {
+readable.on("data", function (data) {
   console.log(data);
   // Logs:
   // stream 1
@@ -79,6 +79,16 @@ Takes an array of `Readable` streams and produces a single `OrderedReadable` str
 
 The returned `Readable` stream has an `addSource` instance function that takes appends a `Readable` stream to the list of source streams that the `OrderedReadable` is reading from.
 
+## Strict No LLM / No AI Policy
+
+No LLMs for issues.
+
+No LLMs for patches / pull requests.
+
+No LLMs for comments on the bug tracker, including translation.
+
+English is encouraged, but not required. You are welcome to post in your native language and rely on others to have their own translation tools of choice to interpret your words.
+
 ## License
 
 MIT
@@ -88,9 +98,9 @@ MIT
 [npm-url]: https://www.npmjs.com/package/ordered-read-streams
 [npm-image]: https://img.shields.io/npm/v/ordered-read-streams.svg?style=flat-square
 
-[ci-url]: https://github.com/gulpjs/ordered-read-streams/actions?query=workflow:dev
-[ci-image]: https://img.shields.io/github/actions/workflow/status/gulpjs/ordered-read-streams/dev.yml?branch=master&style=flat-square
+[ci-url]: https://github.com/gulpjs/ordered-read-streams/actions/workflows/dev.yml
+[ci-image]: https://img.shields.io/github/actions/workflow/status/gulpjs/ordered-read-streams/dev.yml?style=flat-square
 
 [coveralls-url]: https://coveralls.io/r/gulpjs/ordered-read-streams
-[coveralls-image]: https://img.shields.io/coveralls/gulpjs/ordered-read-streams/master.svg?style=flat-square
+[coveralls-image]: https://img.shields.io/coveralls/gulpjs/ordered-read-streams/main.svg?style=flat-square
 <!-- prettier-ignore-end -->
