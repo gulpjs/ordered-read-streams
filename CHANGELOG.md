@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/gulpjs/ordered-read-streams/compare/v2.0.0...v3.0.0) (2026-10-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* Normalize repository, dropping Node <22.15.0 ([#31](https://github.com/gulpjs/ordered-read-streams/issues/31))
+
+### Miscellaneous Chores
+
+* Normalize repository, dropping Node &lt;22.15.0 ([#31](https://github.com/gulpjs/ordered-read-streams/issues/31)) ([63a3794](https://github.com/gulpjs/ordered-read-streams/commit/63a37949ee24d35f2841560d005a7299267fbea5))
+
 ## [2.0.0](https://www.github.com/gulpjs/ordered-read-streams/compare/v1.0.1...v2.0.0) (2022-10-10)
 
 
