@@ -1,4 +1,7 @@
-var expect = require("expect");
+"use strict";
+
+var assert = require("node:assert");
+var { describe, it } = require("node:test");
 
 var OrderedStreams = require("..");
 
@@ -60,13 +63,13 @@ function suite(moduleName) {
   }
 
   describe("ordered-read-streams (" + moduleName + ")", function () {
-    it("ends if no streams are given", function (done) {
+    it("ends if no streams are given", function (t, done) {
       var streams = new OrderedStreams();
 
       stream.pipeline([streams, concat()], done);
     });
 
-    it("does not end until it is read if no streams are given", function (done) {
+    it("does not end until it is read if no streams are given", function (t, done) {
       var streams = new OrderedStreams();
 
       var ended = false;
@@ -75,28 +78,28 @@ function suite(moduleName) {
         ended = true;
       });
       setTimeout(function () {
-        expect(ended).toEqual(false);
+        assert.strictEqual(ended, false);
 
         stream.pipeline([streams, concat()], function (err) {
-          expect(ended).toEqual(true);
+          assert.strictEqual(ended, true);
           done(err);
         });
       }, 250);
     });
 
-    it("throws an error if stream is not readable", function (done) {
+    it("throws an error if stream is not readable", function () {
       var writable = new stream.Writable({ write: function () {} });
 
       function withWritable() {
         new OrderedStreams(writable);
       }
 
-      expect(withWritable).toThrow("All input streams must be readable");
-
-      done();
+      assert.throws(withWritable, {
+        message: "All input streams must be readable",
+      });
     });
 
-    it("throws an error if stream does not have a _read function", function (done) {
+    it("throws an error if stream does not have a _read function", function () {
       function FakeReadable() {
         this.readable = true;
         this.pipe = function () {};
@@ -105,30 +108,29 @@ function suite(moduleName) {
       function withoutRead() {
         new OrderedStreams(new FakeReadable());
       }
-
-      expect(withoutRead).toThrow("All input streams must be readable");
-
-      done();
+      assert.throws(withoutRead, {
+        message: "All input streams must be readable",
+      });
     });
 
-    it("emits data from all streams", function (done) {
+    it("emits data from all streams", function (t, done) {
       var s1 = stream.Readable.from([{ value: "stream 1" }]);
       var s2 = stream.Readable.from([{ value: "stream 2" }]);
       var s3 = stream.Readable.from([{ value: "stream 3" }]);
 
       var streams = new OrderedStreams([s1, s2, s3]);
 
-      function assert(results) {
-        expect(results.length).toEqual(3);
-        expect(results[0]).toEqual({ value: "stream 1" });
-        expect(results[1]).toEqual({ value: "stream 2" });
-        expect(results[2]).toEqual({ value: "stream 3" });
+      function assertion(results) {
+        assert.strictEqual(results.length, 3);
+        assert.deepStrictEqual(results[0], { value: "stream 1" });
+        assert.deepStrictEqual(results[1], { value: "stream 2" });
+        assert.deepStrictEqual(results[2], { value: "stream 3" });
       }
 
-      stream.pipeline([streams, concat(assert)], done);
+      stream.pipeline([streams, concat(assertion)], done);
     });
 
-    it("works without new keyword", function (done) {
+    it("works without new keyword", function (t, done) {
       var s1 = stream.Readable.from([{ value: "stream 1" }]);
       var s2 = stream.Readable.from([{ value: "stream 2" }]);
       var s3 = stream.Readable.from([{ value: "stream 3" }]);
@@ -137,34 +139,34 @@ function suite(moduleName) {
 
       var streams = ordered([s1, s2, s3]);
 
-      function assert(results) {
-        expect(results.length).toEqual(3);
-        expect(results[0]).toEqual({ value: "stream 1" });
-        expect(results[1]).toEqual({ value: "stream 2" });
-        expect(results[2]).toEqual({ value: "stream 3" });
+      function assertion(results) {
+        assert.strictEqual(results.length, 3);
+        assert.deepStrictEqual(results[0], { value: "stream 1" });
+        assert.deepStrictEqual(results[1], { value: "stream 2" });
+        assert.deepStrictEqual(results[2], { value: "stream 3" });
       }
 
-      stream.pipeline([streams, concat(assert)], done);
+      stream.pipeline([streams, concat(assertion)], done);
     });
 
-    it("flattens arrays of streams 1 levels deep", function (done) {
+    it("flattens arrays of streams 1 levels deep", function (t, done) {
       var s1 = stream.Readable.from([{ value: "stream 1" }]);
       var s2 = stream.Readable.from([{ value: "stream 2" }]);
       var s3 = stream.Readable.from([{ value: "stream 3" }]);
 
       var streams = new OrderedStreams([s1, [s2, s3]]);
 
-      function assert(results) {
-        expect(results.length).toEqual(3);
-        expect(results[0]).toEqual({ value: "stream 1" });
-        expect(results[1]).toEqual({ value: "stream 2" });
-        expect(results[2]).toEqual({ value: "stream 3" });
+      function assertion(results) {
+        assert.strictEqual(results.length, 3);
+        assert.deepStrictEqual(results[0], { value: "stream 1" });
+        assert.deepStrictEqual(results[1], { value: "stream 2" });
+        assert.deepStrictEqual(results[2], { value: "stream 3" });
       }
 
-      stream.pipeline([streams, concat(assert)], done);
+      stream.pipeline([streams, concat(assertion)], done);
     });
 
-    it("does not allow changing our read function", function (done) {
+    it("does not allow changing our read function", function (t, done) {
       var s1 = stream.Readable.from([{ value: "stream 1" }]);
       var s2 = stream.Readable.from([{ value: "stream 2" }]);
       var s3 = stream.Readable.from([{ value: "stream 3" }]);
@@ -175,17 +177,17 @@ function suite(moduleName) {
         },
       });
 
-      function assert(results) {
-        expect(results.length).toEqual(3);
-        expect(results[0]).toEqual({ value: "stream 1" });
-        expect(results[1]).toEqual({ value: "stream 2" });
-        expect(results[2]).toEqual({ value: "stream 3" });
+      function assertion(results) {
+        assert.strictEqual(results.length, 3);
+        assert.deepStrictEqual(results[0], { value: "stream 1" });
+        assert.deepStrictEqual(results[1], { value: "stream 2" });
+        assert.deepStrictEqual(results[2], { value: "stream 3" });
       }
 
-      stream.pipeline([streams, concat(assert)], done);
+      stream.pipeline([streams, concat(assertion)], done);
     });
 
-    it("emits all data event from each stream", function (done) {
+    it("emits all data event from each stream", function (t, done) {
       var s = stream.Readable.from([
         { value: "data1" },
         { value: "data2" },
@@ -194,16 +196,14 @@ function suite(moduleName) {
 
       var streams = new OrderedStreams(s);
 
-      function assert(results) {
-        expect(results.length).toEqual(3);
+      function assertion(results) {
+        assert.strictEqual(results.length, 3);
       }
 
-      stream.pipeline([streams, concat(assert)], done);
+      stream.pipeline([streams, concat(assertion)], done);
     });
 
-    it("respects highWaterMark", function (done) {
-      this.timeout(5000);
-
+    it("respects highWaterMark", { timeout: 5000 }, function (t, done) {
       var s1 = stream.Readable.from(
         [{ value: "data1" }, { value: "data2" }, { value: "data3" }],
         { highWaterMark: 1 },
@@ -219,16 +219,14 @@ function suite(moduleName) {
 
       var streams = new OrderedStreams([s1, s2, s3]);
 
-      function assert(results) {
-        expect(results.length).toEqual(9);
+      function assertion(results) {
+        assert.strictEqual(results.length, 9);
       }
 
-      stream.pipeline([streams, concat(assert, 250)], done);
+      stream.pipeline([streams, concat(assertion, 250)], done);
     });
 
-    it("can set highWaterMark on self", function (done) {
-      this.timeout(5000);
-
+    it("can set highWaterMark on self", { timeout: 5000 }, function (t, done) {
       var s1 = stream.Readable.from([
         { value: "data1" },
         { value: "data2" },
@@ -251,14 +249,14 @@ function suite(moduleName) {
         highWaterMark: highWaterMark,
       });
 
-      function assert(results) {
-        expect(results.length).toEqual(9);
+      function assertion(results) {
+        assert.strictEqual(results.length, 9);
       }
 
-      stream.pipeline([streams, concat(assert, 250)], done);
+      stream.pipeline([streams, concat(assertion, 250)], done);
     });
 
-    it("preserves streams order", function (done) {
+    it("preserves streams order", function (t, done) {
       var s1 = fromOnce(function (next) {
         setTimeout(function () {
           next(null, { value: "stream 1" });
@@ -277,17 +275,17 @@ function suite(moduleName) {
 
       var streams = new OrderedStreams([s1, s2, s3]);
 
-      function assert(results) {
-        expect(results.length).toEqual(3);
-        expect(results[0]).toEqual({ value: "stream 1" });
-        expect(results[1]).toEqual({ value: "stream 2" });
-        expect(results[2]).toEqual({ value: "stream 3" });
+      function assertion(results) {
+        assert.strictEqual(results.length, 3);
+        assert.deepStrictEqual(results[0], { value: "stream 1" });
+        assert.deepStrictEqual(results[1], { value: "stream 2" });
+        assert.deepStrictEqual(results[2], { value: "stream 3" });
       }
 
-      stream.pipeline([streams, concat(assert)], done);
+      stream.pipeline([streams, concat(assertion)], done);
     });
 
-    it("emits stream errors downstream", function (done) {
+    it("emits stream errors downstream", function (t, done) {
       var s = fromOnce(function (next) {
         setTimeout(function () {
           next(new Error("stahp!"));
@@ -297,15 +295,15 @@ function suite(moduleName) {
 
       var streams = new OrderedStreams([s, s2]);
 
-      function assert(err) {
-        expect(err.message).toEqual("stahp!");
+      function assertion(err) {
+        assert.strictEqual(err.message, "stahp!");
         done();
       }
 
-      stream.pipeline([streams, concat()], assert);
+      stream.pipeline([streams, concat()], assertion);
     });
 
-    it("emits received data before a stream errors downstream", function (done) {
+    it("emits received data before a stream errors downstream", function (t, done) {
       var s = fromOnce(function (next) {
         setTimeout(function () {
           next(new Error("stahp!"));
@@ -320,12 +318,12 @@ function suite(moduleName) {
         if (typeof enc === "function") {
           next = enc;
         }
-        expect(chunk).toEqual({ value: "Im ok!" });
+        assert.deepStrictEqual(chunk, { value: "Im ok!" });
         next();
       }
 
       function assertErr(err) {
-        expect(err.message).toEqual("stahp!");
+        assert.strictEqual(err.message, "stahp!");
         done();
       }
 
@@ -335,7 +333,7 @@ function suite(moduleName) {
       );
     });
 
-    it("destroys all readable streams if the wrapper is destroyed", function (done) {
+    it("destroys all readable streams if the wrapper is destroyed", function (t, done) {
       var s1 = stream.Readable.from([{ value: "stream 1" }]);
       var s2 = stream.Readable.from([{ value: "stream 2" }]);
       var s3 = stream.Readable.from([{ value: "stream 3" }]);
@@ -359,9 +357,9 @@ function suite(moduleName) {
 
       function assertErr() {
         if (errors.length === 3) {
-          expect(errors[0].message).toEqual("Wrapper destroyed");
-          expect(errors[1].message).toEqual("Wrapper destroyed");
-          expect(errors[2].message).toEqual("Wrapper destroyed");
+          assert.strictEqual(errors[0].message, "Wrapper destroyed");
+          assert.strictEqual(errors[1].message, "Wrapper destroyed");
+          assert.strictEqual(errors[2].message, "Wrapper destroyed");
           done();
         }
       }
@@ -369,7 +367,7 @@ function suite(moduleName) {
       streams.destroy();
     });
 
-    it("destroys the wrapper and other streams if any readable stream is destroyed", function (done) {
+    it("destroys the wrapper and other streams if any readable stream is destroyed", function (t, done) {
       var s1 = stream.Readable.from([{ value: "stream 1" }]);
       var s2 = stream.Readable.from([{ value: "stream 2" }]);
       var s3 = stream.Readable.from([{ value: "stream 3" }]);
@@ -380,28 +378,27 @@ function suite(moduleName) {
 
       s1.on("close", function () {
         closed.push("s1");
-        assert();
+        assertion();
       });
       s2.on("close", function () {
         closed.push("s2");
-        assert();
+        assertion();
       });
       s3.on("close", function () {
         closed.push("s3");
-        assert();
+        assertion();
       });
       streams.on("close", function () {
         closed.push("wrapper");
-        assert();
+        assertion();
       });
 
-      function assert() {
+      function assertion() {
         if (closed.length === 4) {
-          expect(closed).toContain("s2");
-          expect(closed).toContain("wrapper");
-          expect(closed).toContain("s1");
-          expect(closed).toContain("s3");
-
+          assert.strictEqual(closed.includes("s2"), true);
+          assert.strictEqual(closed.includes("wrapper"), true);
+          assert.strictEqual(closed.includes("s1"), true);
+          assert.strictEqual(closed.includes("s3"), true);
           done();
         }
       }
@@ -410,7 +407,7 @@ function suite(moduleName) {
     });
 
     describe("addSource", function () {
-      it("can add a stream to an empty readable before reading", function (done) {
+      it("can add a stream to an empty readable before reading", function (t, done) {
         var streams = new OrderedStreams();
 
         streams.addSource(
@@ -421,14 +418,14 @@ function suite(moduleName) {
           ]),
         );
 
-        function assert(results) {
-          expect(results.length).toEqual(3);
+        function assertion(results) {
+          assert.strictEqual(results.length, 3);
         }
 
-        stream.pipeline([streams, concat(assert)], done);
+        stream.pipeline([streams, concat(assertion)], done);
       });
 
-      it("can add a stream at the end of the readable", function (done) {
+      it("can add a stream at the end of the readable", function (t, done) {
         var s = stream.Readable.from([
           { value: "data1" },
           { value: "data2" },
@@ -445,20 +442,20 @@ function suite(moduleName) {
           ]),
         );
 
-        function assert(results) {
-          expect(results.length).toEqual(6);
-          expect(results[0]).toEqual({ value: "data1" });
-          expect(results[1]).toEqual({ value: "data2" });
-          expect(results[2]).toEqual({ value: "data3" });
-          expect(results[3]).toEqual({ value: "data4" });
-          expect(results[4]).toEqual({ value: "data5" });
-          expect(results[5]).toEqual({ value: "data6" });
+        function assertion(results) {
+          assert.strictEqual(results.length, 6);
+          assert.deepStrictEqual(results[0], { value: "data1" });
+          assert.deepStrictEqual(results[1], { value: "data2" });
+          assert.deepStrictEqual(results[2], { value: "data3" });
+          assert.deepStrictEqual(results[3], { value: "data4" });
+          assert.deepStrictEqual(results[4], { value: "data5" });
+          assert.deepStrictEqual(results[5], { value: "data6" });
         }
 
-        stream.pipeline([streams, concat(assert)], done);
+        stream.pipeline([streams, concat(assertion)], done);
       });
 
-      it("can add a stream while the readable is already flowing", function (done) {
+      it("can add a stream while the readable is already flowing", function (t, done) {
         var data = [
           { value: "data1" },
           { value: "data2" },
@@ -484,20 +481,20 @@ function suite(moduleName) {
 
         var streams = new OrderedStreams(s);
 
-        function assert(results) {
-          expect(results.length).toEqual(6);
-          expect(results[0]).toEqual({ value: "data1" });
-          expect(results[1]).toEqual({ value: "data2" });
-          expect(results[2]).toEqual({ value: "data3" });
-          expect(results[3]).toEqual({ value: "data4" });
-          expect(results[4]).toEqual({ value: "data5" });
-          expect(results[5]).toEqual({ value: "data6" });
+        function assertion(results) {
+          assert.strictEqual(results.length, 6);
+          assert.deepStrictEqual(results[0], { value: "data1" });
+          assert.deepStrictEqual(results[1], { value: "data2" });
+          assert.deepStrictEqual(results[2], { value: "data3" });
+          assert.deepStrictEqual(results[3], { value: "data4" });
+          assert.deepStrictEqual(results[4], { value: "data5" });
+          assert.deepStrictEqual(results[5], { value: "data6" });
         }
 
-        stream.pipeline([streams, concat(assert)], done);
+        stream.pipeline([streams, concat(assertion)], done);
       });
 
-      it("throws an error if stream is not readable", function (done) {
+      it("throws an error if stream is not readable", function () {
         var streams = new OrderedStreams();
 
         function withWritable() {
@@ -505,9 +502,9 @@ function suite(moduleName) {
           streams.addSource(writable);
         }
 
-        expect(withWritable).toThrow("All input streams must be readable");
-
-        done();
+        assert.throws(withWritable, {
+          message: "All input streams must be readable",
+        });
       });
     });
   });
